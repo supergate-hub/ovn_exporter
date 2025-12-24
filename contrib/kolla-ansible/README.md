@@ -42,7 +42,7 @@ kolla-ansible -i inventory reconfigure -t ovn
 Download and extract the exporter binary:
 
 ```bash
-VERSION=2.3.1
+VERSION=2.3.2
 wget "https://github.com/lucadelmonte/ovn_exporter/releases/download/v$VERSION/ovn-exporter_${VERSION}_linux_amd64.tar.gz"
 mkdir ovn-exporter
 tar -xzf ovn-exporter_${VERSION}_linux_amd64.tar.gz -C ovn-exporter
