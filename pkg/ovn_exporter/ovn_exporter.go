@@ -16,18 +16,16 @@ package ovn_exporter
 
 import (
 	"fmt"
+	"os"
 	"sync"
 	"sync/atomic"
 	"time"
-
-	"os"
 
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
 	"github.com/greenpau/ovsdb"
 	"github.com/greenpau/versioned"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/promslog"
 	"github.com/prometheus/common/version"
 )
 
@@ -115,8 +113,13 @@ var (
 		[]string{"system_id", "component", "filename"}, nil,
 	)
 	chassisInfo = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "chassis_info"),
-		"Whether the OVN chassis is up (1) or down (0), together with additional information about the chassis.",
+		prometheus.BuildFQName(namespace, "", "chassis_nb_cfg_timestamp_milliseconds"),
+		"The nb_cfg_timestamp from OVN Chassis_Private table in milliseconds. Value is 0 if chassis has no entry in Chassis_Private (not reporting).",
+		[]string{"system_id", "uuid", "name", "ip"}, nil,
+	)
+	chassisNbCfg = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "chassis_nb_cfg"),
+		"The nb_cfg (configuration sequence number) from OVN Chassis_Private table. Value is 0 if chassis has no entry in Chassis_Private (not reporting).",
 		[]string{"system_id", "uuid", "name", "ip"}, nil,
 	)
 	logicalSwitchInfo = prometheus.NewDesc(
@@ -345,28 +348,26 @@ type Options struct {
 
 // NewLogger returns an instance of logger.
 func NewLogger(logLevel string) (log.Logger, error) {
-	// Create level and format objects
-	level := promslog.NewLevel()
-	format := promslog.NewFormat()
+	logger := log.NewLogfmtLogger(os.Stderr)
+	logger = log.With(logger, "ts", log.DefaultTimestampUTC)
+	logger = log.With(logger, "caller", log.DefaultCaller)
 
-	// Set the log level
-	if err := level.Set(logLevel); err != nil {
-		return nil, err
+	var levelFilter level.Option
+	switch logLevel {
+	case "debug":
+		levelFilter = level.AllowDebug()
+	case "info":
+		levelFilter = level.AllowInfo()
+	case "warn":
+		levelFilter = level.AllowWarn()
+	case "error":
+		levelFilter = level.AllowError()
+	default:
+		return nil, fmt.Errorf("invalid log level: %s", logLevel)
 	}
 
-	promslogConfig := &promslog.Config{
-		Level: level,
-		Format: format,
-		Style: promslog.GoKitStyle, // Use GoKitStyle for compatibility with existing go-kit/log
-	}
-
-	// Create the logger - for compatibility, we write to stderr and use logfmt
-	promslog.New(promslogConfig) // This configures slog
-
-	// Return a go-kit logger that writes to stderr in logfmt format
-	w := log.NewSyncWriter(os.Stderr)
-	logger := log.NewLogfmtLogger(w)
-	return log.With(logger, "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller), nil
+	logger = level.NewFilter(logger, levelFilter)
+	return logger, nil
 }
 
 // NewExporter returns an initialized Exporter.
@@ -424,6 +425,7 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- dbFileSize
 	ch <- logEventStat
 	ch <- chassisInfo
+	ch <- chassisNbCfg
 	ch <- logicalSwitchInfo
 	ch <- logicalSwitchExternalIDs
 	ch <- logicalSwitchPorts
@@ -743,7 +745,16 @@ func (e *Exporter) GatherMetrics() {
 			e.metrics = append(e.metrics, prometheus.MustNewConstMetric(
 				chassisInfo,
 				prometheus.GaugeValue,
-				float64(vtep.Up),
+				float64(vtep.NbCfgTimestamp),
+				e.Client.System.ID,
+				vtep.UUID,
+				vtep.Name,
+				vtep.IPAddress.String(),
+			))
+			e.metrics = append(e.metrics, prometheus.MustNewConstMetric(
+				chassisNbCfg,
+				prometheus.GaugeValue,
+				float64(vtep.NbCfg),
 				e.Client.System.ID,
 				vtep.UUID,
 				vtep.Name,

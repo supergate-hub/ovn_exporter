@@ -34,6 +34,241 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Version information about the OVN installation including system ID, OVN version, and database schema version.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 16,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (hostname, ovn_version, db_version, system_type, system_version) (ovn_info)",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "OVN Info",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "job": true,
+              "instance": true,
+              "Value": true
+            },
+            "indexByName": {
+              "hostname": 0,
+              "ovn_version": 1,
+              "db_version": 2,
+              "system_type": 3,
+              "system_version": 4
+            },
+            "renameByName": {
+              "hostname": "Hostname",
+              "ovn_version": "OVN Version",
+              "db_version": "DB Version",
+              "system_type": "System Type",
+              "system_version": "OS Version"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Table showing all OVN chassis with their last configuration sync timestamp. Active chassis show a recent timestamp (green). No Data (red) means the chassis is not reporting. Not Reporting (orange) indicates a timestamp of 0.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Last Config Sync (ms)"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "from": 1,
+                      "result": {
+                        "color": "green",
+                        "index": 0,
+                        "text": "Active"
+                      },
+                      "to": 9999999999999
+                    },
+                    "type": "range"
+                  },
+                  {
+                    "options": {
+                      "match": "null",
+                      "result": {
+                        "color": "red",
+                        "index": 1,
+                        "text": "No Data"
+                      }
+                    },
+                    "type": "special"
+                  },
+                  {
+                    "options": {
+                      "0": {
+                        "color": "orange",
+                        "index": 2,
+                        "text": "Not Reporting"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 11,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (name, ip) (ovn_chassis_nb_cfg_timestamp_milliseconds)",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Chassis Information",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "job": true,
+              "instance": true
+            },
+            "indexByName": {
+              "name": 0,
+              "ip": 1,
+              "Value": 2
+            },
+            "renameByName": {
+              "Value": "Last Config Sync (ms)",
+              "name": "Chassis Name",
+              "ip": "IP Address"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Current status of the OVN stack. UP (green) means the OVN exporter can successfully connect to all OVN components. DOWN (red) indicates connection failures.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -77,7 +312,7 @@
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 0
+        "y": 13
       },
       "id": 1,
       "options": {
@@ -101,7 +336,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "ovn_up",
+          "expr": "max(ovn_up)",
           "legendFormat": "OVN Status",
           "range": true,
           "refId": "A"
@@ -115,6 +350,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Rate of failed requests to OVN stack components per minute. High values indicate connectivity or performance issues with OVN databases.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -146,7 +382,7 @@
         "h": 4,
         "w": 6,
         "x": 6,
-        "y": 0
+        "y": 13
       },
       "id": 2,
       "options": {
@@ -170,7 +406,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(ovn_failed_requests_total[5m])) * 60",
+          "expr": "sum(max by (system_id) (rate(ovn_failed_requests_total[5m]))) * 60",
           "legendFormat": "Failed Requests/min",
           "range": true,
           "refId": "A"
@@ -184,6 +420,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Distribution of OVN chassis across the cluster. Each chassis represents a hypervisor or network node running ovn-controller.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -205,7 +442,7 @@
         "h": 8,
         "w": 6,
         "x": 12,
-        "y": 0
+        "y": 13
       },
       "id": 3,
       "options": {
@@ -234,8 +471,8 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "count by (chassis) (ovn_chassis_info)",
-          "legendFormat": "{{chassis}}",
+          "expr": "count by (name) (max by (name) (ovn_chassis_nb_cfg_timestamp_milliseconds > 0))",
+          "legendFormat": "{{name}}",
           "range": true,
           "refId": "A"
         }
@@ -248,6 +485,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Total number of unique logical switches defined in the OVN Northbound database. Logical switches provide L2 network segments.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -271,7 +509,7 @@
         "h": 4,
         "w": 6,
         "x": 18,
-        "y": 0
+        "y": 13
       },
       "id": 4,
       "options": {
@@ -295,7 +533,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "count(count by (name) (ovn_logical_switch_info))",
+          "expr": "count(count by (name) (max by (name, system_id) (ovn_logical_switch_info)))",
           "legendFormat": "Logical Switches",
           "range": true,
           "refId": "A"
@@ -309,6 +547,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Current system availability percentage. Calculated as the average of all OVN stack status values. 100% means all monitored OVN components are healthy.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -342,7 +581,7 @@
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 4
+        "y": 17
       },
       "id": 5,
       "options": {
@@ -364,7 +603,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "(1 - (sum(rate(ovn_failed_requests_total[5m])) / sum(rate(ovn_failed_requests_total[5m])) + 1)) * 100",
+          "expr": "avg(max by (system_id) (ovn_up)) * 100",
           "legendFormat": "Availability",
           "range": true,
           "refId": "A"
@@ -378,6 +617,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Total number of unique logical switch ports across all logical switches. Each port represents a virtual network interface connected to the OVN network.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -401,7 +641,7 @@
         "h": 4,
         "w": 6,
         "x": 6,
-        "y": 4
+        "y": 17
       },
       "id": 6,
       "options": {
@@ -425,7 +665,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "count(count by (port) (ovn_logical_switch_port_info))",
+          "expr": "count(count by (name) (max by (name, system_id) (ovn_logical_switch_port_info)))",
           "legendFormat": "Logical Ports",
           "range": true,
           "refId": "A"
@@ -439,6 +679,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Total number of unique logical routers defined in OVN. Logical routers provide L3 routing between logical switches and external networks.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -462,7 +703,7 @@
         "h": 4,
         "w": 6,
         "x": 18,
-        "y": 4
+        "y": 17
       },
       "id": 7,
       "options": {
@@ -486,7 +727,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "count(count by (name) (ovn_logical_router_info))",
+          "expr": "count(count by (name) (max by (name, system_id) (ovn_logical_router_info)))",
           "legendFormat": "Logical Routers",
           "range": true,
           "refId": "A"
@@ -500,75 +741,67 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Whether this OVN exporter instance sees itself as the Raft cluster leader for Northbound (NB) and Southbound (SB) databases. Leader (green) handles all write operations; Follower (blue) replicates from the leader.",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "tooltip": false,
-              "viz": false,
-              "legend": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "blue",
+                  "index": 0,
+                  "text": "Follower"
+                },
+                "1": {
+                  "color": "green",
+                  "index": 1,
+                  "text": "Leader"
+                }
+              },
+              "type": "value"
             }
-          },
-          "mappings": [],
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "blue",
                 "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
               }
             ]
           },
-          "unit": "bytes"
+          "unit": "none"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 4,
         "w": 12,
         "x": 0,
-        "y": 8
+        "y": 21
       },
-      "id": 8,
+      "id": 14,
       "options": {
-        "legend": {
-          "calcs": ["mean", "lastNotNull"],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
         },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
+        "text": {},
+        "textMode": "auto"
       },
+      "pluginVersion": "10.0.0",
       "targets": [
         {
           "datasource": {
@@ -576,89 +809,80 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "ovn_db_file_size_bytes",
-          "legendFormat": "{{db_name}}",
+          "expr": "max by (system_id) (ovn_cluster_leader_self{component=\"ovsdb-server-northbound\"})",
+          "legendFormat": "NB: {{system_id}}",
           "range": true,
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (system_id) (ovn_cluster_leader_self{component=\"ovsdb-server-southbound\"})",
+          "legendFormat": "SB: {{system_id}}",
+          "range": true,
+          "refId": "B"
         }
       ],
-      "title": "Database File Sizes",
-      "type": "timeseries"
+      "title": "Cluster Leader Status (per node)",
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Number of peers in each OVN database cluster. For high availability, you should have at least 3 peers (odd number for quorum). Values below 2 indicate a degraded cluster that may lose quorum.",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "tooltip": false,
-              "viz": false,
-              "legend": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "mode": "thresholds"
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "red",
                 "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "green",
+                "value": 2
               }
             ]
           },
-          "unit": "bytes"
+          "unit": "none"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 4,
         "w": 12,
         "x": 12,
-        "y": 8
+        "y": 21
       },
-      "id": 9,
+      "id": 150,
       "options": {
-        "legend": {
-          "calcs": ["mean", "lastNotNull"],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
         },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
+        "text": {},
+        "textMode": "auto"
       },
+      "pluginVersion": "10.0.0",
       "targets": [
         {
           "datasource": {
@@ -666,20 +890,21 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "ovn_log_file_size_bytes",
+          "expr": "max by (component) (ovn_cluster_peer_count)",
           "legendFormat": "{{component}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Log File Sizes",
-      "type": "timeseries"
+      "title": "Cluster Peer Count",
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Raft log high index for each OVN cluster database. This represents the number of committed log entries in the Raft consensus protocol. Steadily increasing values indicate healthy cluster operation.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -734,7 +959,189 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 16
+        "y": 25
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "calcs": ["mean", "lastNotNull"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (component, cluster_id) (ovn_cluster_log_high_index)",
+          "legendFormat": "{{component}} ({{cluster_id}})",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Cluster Raft Log Index",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Size of OVN component log files in bytes. Monitor for unexpected growth which could indicate excessive logging or issues requiring attention.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 25
+      },
+      "id": 9,
+      "options": {
+        "legend": {
+          "calcs": ["mean", "lastNotNull"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (component) (ovn_log_file_size_bytes)",
+          "legendFormat": "{{component}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Log File Sizes",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Current role of each cluster member in the Raft consensus protocol. Values: 3=Leader (actively serving writes), 2=Candidate (running for election), 1=Follower (replicating from leader). Watch for frequent role changes which indicate cluster instability.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 33
       },
       "id": 10,
       "options": {
@@ -756,13 +1163,13 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "rate(ovn_log_events_total[5m])",
-          "legendFormat": "{{component}} - {{severity}}",
+          "expr": "max by (component, cluster_id) (ovn_cluster_role)",
+          "legendFormat": "{{component}} ({{cluster_id}})",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Log Event Rate by Severity",
+      "title": "Cluster Role (3=leader, 2=candidate, 1=follower)",
       "type": "timeseries"
     },
     {
@@ -770,17 +1177,141 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Time since each chassis last synchronized its configuration from the OVN Southbound database. Values above 60s (yellow) or 300s (red) indicate sync delays that may cause network configuration drift.",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
           },
           "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
             },
-            "inspect": false
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 60
+              },
+              {
+                "color": "red",
+                "value": 300
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 33
+      },
+      "id": 12,
+      "options": {
+        "legend": {
+          "calcs": ["mean", "max", "lastNotNull"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "(time() * 1000 - max by (name) (ovn_chassis_nb_cfg_timestamp_milliseconds)) / 1000",
+          "legendFormat": "{{name}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Config Sync Lag per Chassis",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "The nb_cfg (Northbound Configuration) sequence number for each chassis. This number increases when configuration changes are propagated. All chassis should have matching or close values; divergence indicates replication lag.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
@@ -791,58 +1322,30 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "none"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Status"
-            },
-            "properties": [
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "color-background"
-                }
-              },
-              {
-                "id": "mappings",
-                "value": [
-                  {
-                    "options": {
-                      "1": {
-                        "color": "green",
-                        "index": 0,
-                        "text": "Active"
-                      }
-                    },
-                    "type": "value"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 12,
-        "y": 16
+        "x": 0,
+        "y": 41
       },
-      "id": 11,
+      "id": 13,
       "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": ["sum"],
-          "show": false
+        "legend": {
+          "calcs": ["lastNotNull"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "showHeader": true
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
-      "pluginVersion": "10.0.0",
       "targets": [
         {
           "datasource": {
@@ -850,36 +1353,295 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "ovn_chassis_info",
-          "format": "table",
+          "expr": "max by (name) (ovn_chassis_nb_cfg)",
+          "legendFormat": "{{name}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Chassis Information",
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true,
-              "__name__": true,
-              "job": true,
-              "instance": true
+      "title": "NB Config Sequence per Chassis",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Current Raft term for each cluster. The term increases with each leader election. Frequent term increases indicate cluster instability or network issues between cluster members.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Raft Term",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
             },
-            "indexByName": {},
-            "renameByName": {
-              "Value": "Status",
-              "chassis": "Chassis",
-              "encap_ip": "Encap IP",
-              "encap_type": "Encap Type",
-              "hostname": "Hostname",
-              "uuid": "UUID"
+            "insertNulls": false,
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
             }
-          }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 41
+      },
+      "id": 17,
+      "options": {
+        "legend": {
+          "calcs": ["lastNotNull"],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (component) (ovn_cluster_term)",
+          "legendFormat": "{{component}}",
+          "range": true,
+          "refId": "A"
         }
       ],
-      "type": "table"
+      "title": "Cluster Term (Leader Elections)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Number of Raft leader elections in the last 5 minutes. Occasional elections during maintenance or node restarts are normal. Frequent elections (>2 yellow, >5 red) indicate cluster health issues.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Elections",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 2
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 49
+      },
+      "id": 18,
+      "options": {
+        "legend": {
+          "calcs": ["sum"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (component) (changes(ovn_cluster_term[5m]))",
+          "legendFormat": "{{component}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Leader Elections (last 5m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Number of Raft log entries that have been committed but not yet applied. High values indicate the server is falling behind in processing updates. Persistent non-zero values may indicate performance issues.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 49
+      },
+      "id": 19,
+      "options": {
+        "legend": {
+          "calcs": ["lastNotNull"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (component) (ovn_cluster_pending_entry_count)",
+          "legendFormat": "{{component}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Cluster Pending Entries",
+      "type": "timeseries"
     }
   ],
   "refresh": "30s",

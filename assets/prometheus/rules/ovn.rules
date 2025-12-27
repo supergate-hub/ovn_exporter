@@ -1,0 +1,168 @@
+groups:
+
+- name: OVNExporter
+
+  rules:
+
+    # === AVAILABILITY ALERTS ===
+
+    - alert: OVNExporterDown
+      expr: up{job="ovn-exporter"} == 0
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: OVN exporter down (system_id {{ $labels.system_id }})
+        description: "Failed to scrape OVN exporter on {{ $labels.system_id }} for more than 2 minutes."
+
+    - alert: OVNDown
+      expr: ovn_up == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: OVN is down (system_id {{ $labels.system_id }})
+        description: "OVN is not responding on {{ $labels.system_id }}. This affects virtual network management."
+
+    # === REQUEST ERRORS ===
+
+    - alert: OVNFailedRequestsIncreasing
+      expr: sum by(system_id) (rate(ovn_failed_requests_total[5m])) > 0.1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: OVN failed requests increasing (system_id {{ $labels.system_id }})
+        description: "OVN failed requests are increasing on {{ $labels.system_id }}.\n  VALUE = {{ $value }} requests/sec"
+
+    - alert: OVNHighFailedRequestRate
+      expr: sum by(system_id) (rate(ovn_failed_requests_total[5m])) > 1
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: OVN high failed request rate (system_id {{ $labels.system_id }})
+        description: "OVN is experiencing a high rate of failed requests on {{ $labels.system_id }}.\n  VALUE = {{ $value }} requests/sec"
+
+    # === CLUSTER HEALTH ALERTS ===
+
+    - alert: OVNClusterNoLeader
+      expr: sum by(cluster_id) (ovn_cluster_leader_self) == 0
+      for: 30s
+      labels:
+        severity: critical
+      annotations:
+        summary: OVN cluster has no leader (cluster_id {{ $labels.cluster_id }})
+        description: "OVN cluster {{ $labels.cluster_id }} has no elected leader. This prevents configuration updates."
+
+    - alert: OVNClusterPendingEntriesHigh
+      expr: max by(system_id) (ovn_cluster_pending_entry_count) > 100
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: OVN cluster pending entries high (system_id {{ $labels.system_id }})
+        description: "OVN cluster on {{ $labels.system_id }} has many pending entries.\n  VALUE = {{ $value }}"
+
+    - alert: OVNClusterPendingEntriesCritical
+      expr: max by(system_id) (ovn_cluster_pending_entry_count) > 1000
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: OVN cluster pending entries critical (system_id {{ $labels.system_id }})
+        description: "OVN cluster on {{ $labels.system_id }} has critically high pending entries. Cluster may be overwhelmed.\n  VALUE = {{ $value }}"
+
+    - alert: OVNClusterPeerCountLow
+      expr: min by(system_id) (ovn_cluster_peer_count) < 2
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: OVN cluster peer count low (system_id {{ $labels.system_id }})
+        description: "OVN cluster on {{ $labels.system_id }} has fewer than 2 peers. Cluster quorum may be at risk.\n  VALUE = {{ $value }}"
+
+    - alert: OVNClusterLeaderChange
+      expr: sum by(system_id) (changes(ovn_cluster_leader_self[1m])) > 0
+      for: 0m
+      labels:
+        severity: info
+      annotations:
+        summary: OVN cluster leader changed (system_id {{ $labels.system_id }})
+        description: "OVN cluster leadership changed on {{ $labels.system_id }}."
+
+    - alert: OVNClusterLeaderChangedFrequently
+      expr: sum by(system_id) (changes(ovn_cluster_leader_self[5m])) > 2
+      for: 0m
+      labels:
+        severity: warning
+      annotations:
+        summary: OVN cluster leader changed frequently (system_id {{ $labels.system_id }})
+        description: "OVN cluster leadership has changed more than twice in the last 5 minutes on {{ $labels.system_id }}. This may indicate cluster instability."
+
+    - alert: OVNClusterUncommittedEntriesHigh
+      expr: max by(system_id) (ovn_cluster_uncommitted_entry_count) > 100
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: OVN cluster uncommitted entries high (system_id {{ $labels.system_id }})
+        description: "OVN cluster on {{ $labels.system_id }} has many uncommitted raft entries.\n  VALUE = {{ $value }}"
+
+    - alert: OVNClusterStuckInCandidate
+      expr: ovn_cluster_role == 2
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: OVN cluster node stuck in candidate role (system_id {{ $labels.system_id }})
+        description: "OVN cluster node {{ $labels.server_id }} on {{ $labels.system_id }} is stuck in candidate role. Election may be failing."
+
+    - alert: OVNClusterNotMember
+      expr: ovn_cluster_status != 1
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: OVN cluster node not a member (system_id {{ $labels.system_id }})
+        description: "OVN cluster node {{ $labels.server_id }} on {{ $labels.system_id }} is not a cluster member (status={{ $value }})."
+
+    - alert: OVNClusterPeerDisconnected
+      expr: (ovn_cluster_inbound_peer_connected == 0 or ovn_cluster_outbound_peer_connected == 0)
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: OVN cluster peer disconnected (system_id {{ $labels.system_id }})
+        description: "OVN cluster peer {{ $labels.peer_id }} is disconnected from {{ $labels.system_id }}."
+
+    # === CONFIG SYNC ALERTS ===
+
+    - alert: OVNChassisConfigSyncLag
+      expr: (time() * 1000 - ovn_chassis_nb_cfg_timestamp_milliseconds) / 1000 > 60*3
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: OVN chassis config sync lag (chassis {{ $labels.name }})
+        description: "OVN chassis {{ $labels.name }} configuration is lagging behind by more than 3 minutes. This could indicate sync issues OR simply no recent network updates from Neutron/OpenStack. Try creating a network resource (e.g., openstack network create test-net) to verify if updates are flowing.\n  VALUE = {{ $value | humanizeDuration }}"
+
+    - alert: OVNChassisConfigSyncCritical
+      expr: (time() * 1000 - ovn_chassis_nb_cfg_timestamp_milliseconds) / 1000 > 300
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: OVN chassis config sync critical (chassis {{ $labels.name }})
+        description: "OVN chassis {{ $labels.name }} configuration is severely lagging behind (>5 minutes). Network updates may not be applied. Note: This could also indicate no recent network updates from Neutron/OpenStack. Try creating a network resource (e.g., openstack network create test-net) to verify if the sync mechanism is working.\n  VALUE = {{ $value | humanizeDuration }}"
+
+    # === RESOURCE ALERTS ===
+
+    - alert: OVNLogFileLarge
+      expr: ovn_log_file_size_bytes > 104857600
+      for: 30m
+      labels:
+        severity: info
+      annotations:
+        summary: OVN log file large (system_id {{ $labels.system_id }})
+        description: "OVN log file {{ $labels.component }} on {{ $labels.system_id }} is larger than 100MB.\n  VALUE = {{ $value | humanize1024 }}"

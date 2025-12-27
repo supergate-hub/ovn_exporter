@@ -34,6 +34,100 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Version information about the OVN installation including hostname, OVN version, and database schema version.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 20,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "max by (hostname, ovn_version, db_version, system_type, system_version) (ovn_info)",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "OVN System Info",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "job": true,
+              "instance": true,
+              "Value": true
+            },
+            "indexByName": {
+              "hostname": 0,
+              "ovn_version": 1,
+              "db_version": 2,
+              "system_type": 3,
+              "system_version": 4
+            },
+            "renameByName": {
+              "hostname": "Hostname",
+              "ovn_version": "OVN Version",
+              "db_version": "DB Version",
+              "system_type": "System Type",
+              "system_version": "OS Version"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "description": "Average OVN stack availability over the selected time period. Calculated as the average of ovn_up (1=up, 0=down) across all scrape points.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -68,7 +162,7 @@
         "h": 8,
         "w": 6,
         "x": 0,
-        "y": 0
+        "y": 5
       },
       "id": 1,
       "options": {
@@ -90,7 +184,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "(\n  (\n    sum(increase(ovn_up[${range}])) - \n    sum(increase(ovn_failed_requests_total[${range}]))\n  ) / \n  sum(increase(ovn_up[${range}]))\n) * 100",
+          "expr": "avg(avg_over_time(ovn_up[${range}])) * 100",
           "legendFormat": "SLA Uptime",
           "range": true,
           "refId": "A"
@@ -104,6 +198,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Network availability based on OVN stack health. Shows what percentage of time the OVN control plane was available.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -138,7 +233,7 @@
         "h": 8,
         "w": 6,
         "x": 6,
-        "y": 0
+        "y": 5
       },
       "id": 2,
       "options": {
@@ -160,7 +255,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "(\n  (\n    sum(increase(ovn_up[${range}])) - \n    sum(increase(ovn_failed_requests_total[${range}]))\n  ) / \n  sum(increase(ovn_up[${range}]))\n) * 100",
+          "expr": "(\n  1 - (\n    sum(max by (system_id) (rate(ovn_failed_requests_total[${range}]))) /\n    clamp_min(sum(max by (system_id) (rate(ovn_requests_total[${range}]))), 1)\n  )\n) * 100",
           "legendFormat": "Network Availability",
           "range": true,
           "refId": "A"
@@ -174,6 +269,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Percentage of OVN requests that failed. Lower is better. Calculated as failed_requests / total_requests.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -205,7 +301,7 @@
         "h": 4,
         "w": 6,
         "x": 12,
-        "y": 0
+        "y": 5
       },
       "id": 3,
       "options": {
@@ -229,7 +325,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(ovn_failed_requests_total[5m])) / (sum(rate(ovn_failed_requests_total[5m])) + 1)",
+          "expr": "sum(max by (system_id) (rate(ovn_failed_requests_total[5m]))) / clamp_min(sum(max by (system_id) (rate(ovn_requests_total[5m]))), 0.001)",
           "legendFormat": "Error Rate",
           "range": true,
           "refId": "A"
@@ -243,6 +339,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Maximum time since any chassis last synced configuration from the northbound database. High values indicate chassis not receiving updates.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -258,15 +355,15 @@
               },
               {
                 "color": "yellow",
-                "value": 100
+                "value": 60
               },
               {
                 "color": "red",
-                "value": 1000
+                "value": 300
               }
             ]
           },
-          "unit": "ms"
+          "unit": "s"
         },
         "overrides": []
       },
@@ -274,7 +371,7 @@
         "h": 4,
         "w": 6,
         "x": 18,
-        "y": 0
+        "y": 5
       },
       "id": 4,
       "options": {
@@ -298,13 +395,13 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "ovn_response_time_seconds * 1000",
-          "legendFormat": "Response Time",
+          "expr": "max((time() * 1000 - max by (name) (ovn_chassis_nb_cfg_timestamp_milliseconds)) / 1000)",
+          "legendFormat": "Config Sync Lag",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Avg Response Time",
+      "title": "Max Config Sync Lag",
       "type": "stat"
     },
     {
@@ -312,6 +409,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Number of OVN chassis actively reporting configuration sync timestamps. These are hypervisors/compute nodes running ovn-controller.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -335,7 +433,7 @@
         "h": 4,
         "w": 6,
         "x": 12,
-        "y": 4
+        "y": 9
       },
       "id": 5,
       "options": {
@@ -359,7 +457,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "count(ovn_chassis_info == 1)",
+          "expr": "count(count by (name) (ovn_chassis_nb_cfg_timestamp_milliseconds > 0))",
           "legendFormat": "Active Chassis",
           "range": true,
           "refId": "A"
@@ -373,6 +471,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Number of logical switches with active tunnel keys. Indicates the number of virtual networks with active encapsulation tunnels.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -396,7 +495,7 @@
         "h": 4,
         "w": 6,
         "x": 18,
-        "y": 4
+        "y": 9
       },
       "id": 6,
       "options": {
@@ -420,7 +519,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(ovn_logical_switch_tunnel_key > 0)",
+          "expr": "count(count by (uuid) (ovn_logical_switch_tunnel_key > 0))",
           "legendFormat": "Active Tunnels",
           "range": true,
           "refId": "A"
@@ -434,6 +533,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "OVN stack availability over time. Shows 100% when ovn_up=1, 0% when ovn_up=0. Use this to identify availability dips.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -472,7 +572,7 @@
           },
           "mappings": [],
           "max": 100,
-          "min": 95,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -498,7 +598,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 8
+        "y": 13
       },
       "id": 7,
       "options": {
@@ -520,8 +620,8 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "(\n  (\n    increase(ovn_up[5m]) - \n    increase(ovn_failed_requests_total[5m])\n  ) / \n  increase(ovn_up[5m])\n) * 100",
-          "legendFormat": "Network Uptime %",
+          "expr": "avg(ovn_up) * 100",
+          "legendFormat": "OVN Availability %",
           "range": true,
           "refId": "A"
         }
@@ -534,6 +634,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Rate of failed OVN requests and cluster term changes (leader elections). Spikes in term changes indicate cluster instability.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -580,7 +681,7 @@
               }
             ]
           },
-          "unit": "reqps"
+          "unit": "short"
         },
         "overrides": []
       },
@@ -588,7 +689,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 8
+        "y": 13
       },
       "id": 8,
       "options": {
@@ -610,8 +711,8 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "rate(ovn_failed_requests_total[5m])",
-          "legendFormat": "Failed Requests/sec",
+          "expr": "sum(max by (system_id) (rate(ovn_failed_requests_total[5m]))) * 60",
+          "legendFormat": "Failed Requests/min",
           "range": true,
           "refId": "A"
         },
@@ -621,8 +722,8 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "rate(ovn_cluster_election_timer_total[5m])",
-          "legendFormat": "Cluster Elections/sec",
+          "expr": "sum(max by (component, cluster_id) (changes(ovn_cluster_term[5m])))",
+          "legendFormat": "Leader Elections (5m)",
           "range": true,
           "refId": "B"
         }
@@ -635,6 +736,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "SLA compliance summary per system. Shows overall health status based on successful vs failed requests.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -666,62 +768,53 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "SLA Status"
+              "options": "Success Rate %"
             },
             "properties": [
               {
                 "id": "custom.cellOptions",
                 "value": {
-                  "type": "color-background"
+                  "mode": "gradient",
+                  "type": "gauge"
                 }
               },
               {
-                "id": "mappings",
-                "value": [
-                  {
-                    "options": {
-                      "pattern": "^[9][9]\\.[9-9].*",
-                      "result": {
-                        "color": "green",
-                        "index": 0,
-                        "text": "HEALTHY"
-                      }
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "max",
+                "value": 100
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
                     },
-                    "type": "regex"
-                  },
-                  {
-                    "options": {
-                      "pattern": "^[9][9]\\.[0-8].*",
-                      "result": {
-                        "color": "yellow",
-                        "index": 1,
-                        "text": "WARNING"
-                      }
+                    {
+                      "color": "yellow",
+                      "value": 99
                     },
-                    "type": "regex"
-                  },
-                  {
-                    "options": {
-                      "pattern": "^[0-9][0-8]\\..*",
-                      "result": {
-                        "color": "red",
-                        "index": 2,
-                        "text": "CRITICAL"
-                      }
-                    },
-                    "type": "regex"
-                  }
-                ]
+                    {
+                      "color": "green",
+                      "value": 99.9
+                    }
+                  ]
+                }
               }
             ]
           }
         ]
       },
       "gridPos": {
-        "h": 8,
+        "h": 10,
         "w": 24,
         "x": 0,
-        "y": 16
+        "y": 21
       },
       "id": 9,
       "options": {
@@ -742,9 +835,10 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "(\n  (\n    increase(ovn_up[${range}]) - \n    increase(ovn_failed_requests_total[${range}])\n  ) / \n  increase(ovn_up[${range}])\n) * 100",
+          "expr": "(\n  max by (system_id) (ovn_successful_requests_total) /\n  clamp_min(max by (system_id) (ovn_requests_total), 1)\n) * 100",
           "format": "table",
-          "range": true,
+          "instant": true,
+          "range": false,
           "refId": "A"
         }
       ],
@@ -761,23 +855,8 @@
             },
             "indexByName": {},
             "renameByName": {
-              "Value": "SLA Status",
+              "Value": "Success Rate %",
               "system_id": "System ID"
-            }
-          }
-        },
-        {
-          "id": "groupBy",
-          "options": {
-            "fields": {
-              "SLA Status": {
-                "aggregations": ["mean"],
-                "operation": "aggregate"
-              },
-              "system_id": {
-                "aggregations": [],
-                "operation": "groupby"
-              }
             }
           }
         }
@@ -789,19 +868,30 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Number of Raft entries waiting to be applied by each OVN database component. High values indicate replication lag.",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "tooltip": false,
-              "viz": false,
-              "legend": false
-            }
+            "mode": "thresholds"
           },
           "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "red",
+                "value": 100
+              }
+            ]
+          },
           "unit": "short"
         },
         "overrides": []
@@ -810,28 +900,23 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 24
+        "y": 31
       },
       "id": 10,
       "options": {
-        "displayLabels": ["name", "percent"],
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "values": ["value", "percent"]
-        },
-        "pieType": "donut",
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "horizontal",
         "reduceOptions": {
           "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
+        "text": {},
+        "textMode": "value_and_name"
       },
+      "pluginVersion": "10.0.0",
       "targets": [
         {
           "datasource": {
@@ -839,20 +924,21 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum by (severity) (rate(ovn_log_events_total[5m]))",
-          "legendFormat": "{{severity}}",
+          "expr": "max by (component) (ovn_cluster_pending_entry_count)",
+          "legendFormat": "{{component}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Log Event Distribution by Severity",
-      "type": "piechart"
+      "title": "Pending Raft Entries by Component",
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
+      "description": "Size of OVN component log files over time. Monitor for unexpected growth which may indicate issues.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -907,7 +993,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 24
+        "y": 31
       },
       "id": 11,
       "options": {
@@ -929,13 +1015,13 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "ovn_memory_usage_bytes",
+          "expr": "max by (component) (ovn_log_file_size_bytes)",
           "legendFormat": "{{component}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Memory Usage by Component",
+      "title": "Log File Sizes",
       "type": "timeseries"
     }
   ],
