@@ -211,6 +211,6 @@ count(count by (name) (ovn_logical_switch_info))
 ## Support
 
 For dashboard-related issues:
-- Check the [main repository](https://github.com/Liquescent-Development/ovn_exporter)
+- Check the [main repository](https://github.com/supergate-hub/ovn_exporter)
 - Review [METRICS.md](../METRICS.md) for metric definitions
 - Open an issue with dashboard JSON and error details

@@ -8,5 +8,9 @@ bin/
 dist/
 TODO
 /ovn-exporter
+ovn_exporter
+
 CLAUDE.md
-.claude
+.claude/
+docs/
+.local/

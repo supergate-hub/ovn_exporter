@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
+	ovn "github.com/supergate-hub/ovn_exporter/pkg/ovn_exporter"
 	"github.com/go-kit/log/level"
-	ovn "github.com/Liquescent-Development/ovn_exporter/pkg/ovn_exporter"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -21,6 +21,8 @@ func main() {
 	var isShowVersion bool
 	var logLevel string
 	var systemRunDir string
+	var ovsEnabled bool
+	var ovnEnabled bool
 	var databaseVswitchName string
 	var databaseVswitchSocketRemote string
 	var databaseVswitchFileDataPath string
@@ -56,6 +58,9 @@ func main() {
 	flag.IntVar(&pollInterval, "ovn.poll-interval", 15, "The minimum interval (in seconds) between collections from OVN server.")
 	flag.BoolVar(&isShowVersion, "version", false, "version information")
 	flag.StringVar(&logLevel, "log.level", "info", "logging severity level")
+
+	flag.BoolVar(&ovsEnabled, "ovs.enabled", true, "Enable OVS metrics collection.")
+	flag.BoolVar(&ovnEnabled, "ovn.enabled", true, "Enable OVN metrics collection.")
 
 	flag.StringVar(&systemRunDir, "system.run.dir", "/var/run/openvswitch", "OVS default run directory.")
 
@@ -96,10 +101,15 @@ func main() {
 		fmt.Fprintf(os.Stderr, "\n%s - Prometheus Exporter for Open Virtual Network (OVN)\n\n", ovn.GetExporterName())
 		fmt.Fprintf(os.Stderr, "Usage: %s [arguments]\n\n", ovn.GetExporterName())
 		flag.PrintDefaults()
-		fmt.Fprintf(os.Stderr, "\nDocumentation: https://github.com/Liquescent-Development/ovn_exporter/\n\n")
+		fmt.Fprintf(os.Stderr, "\nDocumentation: https://github.com/supergate-hub/ovn_exporter/\n\n")
 	}
 	flag.Usage = usageHelp
 	flag.Parse()
+
+	if !ovsEnabled && !ovnEnabled {
+		fmt.Fprintf(os.Stderr, "error: at least one of --ovs.enabled or --ovn.enabled must be true\n")
+		os.Exit(1)
+	}
 
 	if isShowVersion {
 		fmt.Fprintf(os.Stdout, "%s %s", ovn.GetExporterName(), ovn.GetVersion())
@@ -125,8 +135,10 @@ func main() {
 	)
 
 	opts := ovn.Options{
-		Timeout: pollTimeout,
-		Logger:  logger,
+		Timeout:    pollTimeout,
+		Logger:     logger,
+		OvsEnabled: ovsEnabled,
+		OvnEnabled: ovnEnabled,
 	}
 
 	exporter, err := ovn.NewExporter(opts)
@@ -138,40 +150,46 @@ func main() {
 		os.Exit(1)
 	}
 
-	exporter.Client.System.RunDir = systemRunDir
+	// Configure OVS client fields
+	if ovsEnabled && exporter.OvsClient != nil {
+		exporter.OvsClient.System.RunDir = systemRunDir
 
-	exporter.Client.Database.Vswitch.Name = databaseVswitchName
-	exporter.Client.Database.Vswitch.Socket.Remote = databaseVswitchSocketRemote
-	exporter.Client.Database.Vswitch.File.Data.Path = databaseVswitchFileDataPath
-	exporter.Client.Database.Vswitch.File.Log.Path = databaseVswitchFileLogPath
-	exporter.Client.Database.Vswitch.File.Pid.Path = databaseVswitchFilePidPath
-	exporter.Client.Database.Vswitch.File.SystemID.Path = databaseVswitchFileSystemIDPath
+		exporter.OvsClient.Database.Vswitch.Name = databaseVswitchName
+		exporter.OvsClient.Database.Vswitch.Socket.Remote = databaseVswitchSocketRemote
+		exporter.OvsClient.Database.Vswitch.File.Data.Path = databaseVswitchFileDataPath
+		exporter.OvsClient.Database.Vswitch.File.Log.Path = databaseVswitchFileLogPath
+		exporter.OvsClient.Database.Vswitch.File.Pid.Path = databaseVswitchFilePidPath
+		exporter.OvsClient.Database.Vswitch.File.SystemID.Path = databaseVswitchFileSystemIDPath
 
-	exporter.Client.Database.Northbound.Name = databaseNorthboundName
-	exporter.Client.Database.Northbound.Socket.Remote = databaseNorthboundSocketRemote
-	exporter.Client.Database.Northbound.Socket.Control = databaseNorthboundSocketControl
-	exporter.Client.Database.Northbound.File.Data.Path = databaseNorthboundFileDataPath
-	exporter.Client.Database.Northbound.File.Log.Path = databaseNorthboundFileLogPath
-	exporter.Client.Database.Northbound.File.Pid.Path = databaseNorthboundFilePidPath
-	exporter.Client.Database.Northbound.Port.Default = databaseNorthboundPortDefault
-	exporter.Client.Database.Northbound.Port.Ssl = databaseNorthboundPortSsl
-	exporter.Client.Database.Northbound.Port.Raft = databaseNorthboundPortRaft
+		exporter.OvsClient.Service.Vswitchd.File.Log.Path = serviceVswitchdFileLogPath
+		exporter.OvsClient.Service.Vswitchd.File.Pid.Path = serviceVswitchdFilePidPath
+	}
 
-	exporter.Client.Database.Southbound.Name = databaseSouthboundName
-	exporter.Client.Database.Southbound.Socket.Remote = databaseSouthboundSocketRemote
-	exporter.Client.Database.Southbound.Socket.Control = databaseSouthboundSocketControl
-	exporter.Client.Database.Southbound.File.Data.Path = databaseSouthboundFileDataPath
-	exporter.Client.Database.Southbound.File.Log.Path = databaseSouthboundFileLogPath
-	exporter.Client.Database.Southbound.File.Pid.Path = databaseSouthboundFilePidPath
-	exporter.Client.Database.Southbound.Port.Default = databaseSouthboundPortDefault
-	exporter.Client.Database.Southbound.Port.Ssl = databaseSouthboundPortSsl
-	exporter.Client.Database.Southbound.Port.Raft = databaseSouthboundPortRaft
+	// Configure OVN client fields
+	if ovnEnabled && exporter.OvnClient != nil {
+		exporter.OvnClient.Database.Northbound.Name = databaseNorthboundName
+		exporter.OvnClient.Database.Northbound.Socket.Remote = databaseNorthboundSocketRemote
+		exporter.OvnClient.Database.Northbound.Socket.Control = databaseNorthboundSocketControl
+		exporter.OvnClient.Database.Northbound.File.Data.Path = databaseNorthboundFileDataPath
+		exporter.OvnClient.Database.Northbound.File.Log.Path = databaseNorthboundFileLogPath
+		exporter.OvnClient.Database.Northbound.File.Pid.Path = databaseNorthboundFilePidPath
+		exporter.OvnClient.Database.Northbound.Port.Default = databaseNorthboundPortDefault
+		exporter.OvnClient.Database.Northbound.Port.Ssl = databaseNorthboundPortSsl
+		exporter.OvnClient.Database.Northbound.Port.Raft = databaseNorthboundPortRaft
 
-	exporter.Client.Service.Vswitchd.File.Log.Path = serviceVswitchdFileLogPath
-	exporter.Client.Service.Vswitchd.File.Pid.Path = serviceVswitchdFilePidPath
+		exporter.OvnClient.Database.Southbound.Name = databaseSouthboundName
+		exporter.OvnClient.Database.Southbound.Socket.Remote = databaseSouthboundSocketRemote
+		exporter.OvnClient.Database.Southbound.Socket.Control = databaseSouthboundSocketControl
+		exporter.OvnClient.Database.Southbound.File.Data.Path = databaseSouthboundFileDataPath
+		exporter.OvnClient.Database.Southbound.File.Log.Path = databaseSouthboundFileLogPath
+		exporter.OvnClient.Database.Southbound.File.Pid.Path = databaseSouthboundFilePidPath
+		exporter.OvnClient.Database.Southbound.Port.Default = databaseSouthboundPortDefault
+		exporter.OvnClient.Database.Southbound.Port.Ssl = databaseSouthboundPortSsl
+		exporter.OvnClient.Database.Southbound.Port.Raft = databaseSouthboundPortRaft
 
-	exporter.Client.Service.Northd.File.Log.Path = serviceNorthdFileLogPath
-	exporter.Client.Service.Northd.File.Pid.Path = serviceNorthdFilePidPath
+		exporter.OvnClient.Service.Northd.File.Log.Path = serviceNorthdFileLogPath
+		exporter.OvnClient.Service.Northd.File.Pid.Path = serviceNorthdFilePidPath
+	}
 
 	exporter, err = ovn.ExporterPerformClientCalls(exporter)
 	if err != nil {
@@ -182,7 +200,9 @@ func main() {
 		)
 	}
 
-	level.Info(logger).Log("ovs_system_id", exporter.Client.System.ID)
+	if ovsEnabled && exporter.OvsClient != nil {
+		level.Info(logger).Log("ovs_system_id", exporter.OvsClient.System.ID)
+	}
 
 	exporter.SetPollInterval(int64(pollInterval))
 	prometheus.MustRegister(exporter)

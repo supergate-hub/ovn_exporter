@@ -1,6 +1,6 @@
 # Open Virtual Network (OVN) Exporter
 
-[![GitHub Release](https://img.shields.io/github/v/release/Liquescent-Development/ovn_exporter)](https://github.com/Liquescent-Development/ovn_exporter/releases)
+[![GitHub Release](https://img.shields.io/github/v/release/supergate-hub/ovn_exporter)](https://github.com/supergate-hub/ovn_exporter/releases)
 [![Go Version](https://img.shields.io/badge/go-1.24-blue.svg)](https://go.dev/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
@@ -16,6 +16,26 @@ This exporter collects metrics from the following OVN components:
 * `OVN Northbound` database
 * `OVN Southbound` database
 * `Open_vSwitch` database
+
+## What's New in v3.0.0
+
+### Breaking Changes
+- **`system_id` label removed** from most metrics (delegate to Prometheus `external_labels` or relabeling)
+- **`ovn_info` replaced** by `ovn_ovs_info` (OVS-specific, with `system_id` as a label)
+- **Single `Client` split** into independent `OvnClient` + `OvsClient`
+- **ovsdb dependency** switched to `supergate-hub/ovsdb` fork with `OvsClient` support
+
+### New Features
+- **Selective collection**: `--ovn.enabled` / `--ovs.enabled` flags allow running OVN-only, OVS-only, or both
+- **Independent initialization**: OVN and OVS client failures no longer block each other during startup
+- **`ovn_ovs_info` metric**: Surfaces OVS system information (`system_id`, `hostname`, `ovs_version`, etc.)
+
+### Migration Guide
+
+| v2.x | v3.0.0 | Notes |
+|------|--------|-------|
+| `ovn_info` | `ovn_ovs_info` | OVS-specific; `system_id` is now a label on this metric |
+| `ovn_*{system_id="..."}` | `ovn_*` | `system_id` label removed from all other metrics |
 
 ## What's New in v2.2.0
 
@@ -41,7 +61,7 @@ This exporter collects metrics from the following OVN components:
 
 ### Breaking Changes
 - **Go 1.24+ required** (upgraded from Go 1.20)
-- **Module path changed** to `github.com/Liquescent-Development/ovn_exporter`
+- **Module path changed** to `github.com/supergate-hub/ovn_exporter`
 - **Logging system migrated** from deprecated `promlog` to `promslog/slog`
 - **Metric names standardized** to follow Prometheus conventions:
   - `ovn_failed_req_count` → `ovn_failed_requests_total`
@@ -65,16 +85,16 @@ This exporter collects metrics from the following OVN components:
 
 ### Pre-built Binaries
 
-Download the latest release for your platform from the [releases page](https://github.com/Liquescent-Development/ovn_exporter/releases):
+Download the latest release for your platform from the [releases page](https://github.com/supergate-hub/ovn_exporter/releases):
 
 ```bash
 # Linux amd64
-wget https://github.com/Liquescent-Development/ovn_exporter/releases/download/v2.2.0/ovn-exporter_2.2.0_linux_amd64.tar.gz
+wget https://github.com/supergate-hub/ovn_exporter/releases/download/v2.2.0/ovn-exporter_2.2.0_linux_amd64.tar.gz
 tar xvzf ovn-exporter_2.2.0_linux_amd64.tar.gz
 sudo mv ovn-exporter /usr/local/bin/
 
 # Linux arm64
-wget https://github.com/Liquescent-Development/ovn_exporter/releases/download/v2.2.0/ovn-exporter_2.2.0_linux_arm64.tar.gz
+wget https://github.com/supergate-hub/ovn_exporter/releases/download/v2.2.0/ovn-exporter_2.2.0_linux_arm64.tar.gz
 tar xvzf ovn-exporter_2.2.0_linux_arm64.tar.gz
 sudo mv ovn-exporter /usr/local/bin/
 ```
@@ -82,7 +102,7 @@ sudo mv ovn-exporter /usr/local/bin/
 ### Build from Source
 
 ```bash
-git clone https://github.com/Liquescent-Development/ovn_exporter.git
+git clone https://github.com/supergate-hub/ovn_exporter.git
 cd ovn_exporter
 make BUILD_OS=linux BUILD_ARCH=amd64
 sudo make deploy BUILD_OS=linux BUILD_ARCH=amd64
@@ -131,6 +151,8 @@ The exporter can be configured via command-line flags. Run `ovn-exporter --help`
 | `--web.telemetry-path` | `/metrics` | Path under which to expose metrics |
 | `--ovn.timeout` | `2` | Timeout on gRPC requests to OVN (seconds) |
 | `--ovn.poll-interval` | `15` | Minimum interval between collections from OVN server (seconds) |
+| `--ovn.enabled` | `true` | Enable OVN metrics collection |
+| `--ovs.enabled` | `true` | Enable OVS metrics collection |
 | `--log.level` | `info` | Logging severity level (debug, info, warn, error) |
 | `--version` | `false` | Show version information and exit |
 
@@ -191,19 +213,26 @@ The exporter can be configured via command-line flags. Run `ovn-exporter --help`
 ### Example Configuration
 
 ```bash
-# Basic configuration
+# OVN + OVS (default, all metrics)
 ovn-exporter \
   --web.listen-address=:9476 \
   --ovn.poll-interval=30 \
   --log.level=info
 
-# Custom paths configuration
+# OVN-only (controller node without OVS)
 ovn-exporter \
   --web.listen-address=:9476 \
-  --system.run.dir=/custom/run/openvswitch \
-  --database.northbound.socket.remote=unix:/custom/run/openvswitch/ovnnb_db.sock \
-  --database.southbound.socket.remote=unix:/custom/run/openvswitch/ovnsb_db.sock \
-  --log.level=debug
+  --ovn.enabled=true \
+  --ovs.enabled=false \
+  --database.northbound.socket.remote=unix:/var/run/ovn/ovnnb_db.sock \
+  --database.southbound.socket.remote=unix:/var/run/ovn/ovnsb_db.sock
+
+# OVS-only (compute node without OVN)
+ovn-exporter \
+  --web.listen-address=:9476 \
+  --ovn.enabled=false \
+  --ovs.enabled=true \
+  --database.vswitch.socket.remote=unix:/var/run/openvswitch/db.sock
 ```
 
 ## Metrics
@@ -211,11 +240,12 @@ ovn-exporter \
 The exporter provides comprehensive metrics about your OVN infrastructure. See [METRICS.md](METRICS.md) for a complete list of available metrics.
 
 Example metrics:
-- `ovn_up` - Whether OVN stack is up (1) or down (0)
-- `ovn_info` - OVN stack information
+- `ovn_up` - Whether the stack is up (1) or down (0)
+- `ovn_ovs_info` - OVS stack information
 - `ovn_cluster_*` - Cluster health and Raft consensus metrics
-- `ovn_logical_switch_*` - Logical network topology metrics
-- `ovn_chassis_info` - Chassis status and information
+- `ovn_logical_switch_*` - Logical switch topology metrics
+- `ovn_logical_router_*` - Logical router topology metrics
+- `ovn_chassis_*` - Chassis status and information
 
 ## Grafana Dashboards
 
@@ -320,5 +350,5 @@ This is a fork of the original [ovn_exporter](https://github.com/greenpau/ovn_ex
 ## Support
 
 For issues and questions:
-- Open an issue on [GitHub](https://github.com/Liquescent-Development/ovn_exporter/issues)
+- Open an issue on [GitHub](https://github.com/supergate-hub/ovn_exporter/issues)
 - Check the [METRICS.md](METRICS.md) for metric documentation

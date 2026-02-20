@@ -1,9 +1,12 @@
----
+version: 2
+
 before:
   hooks:
     - go mod tidy
+
 builds:
-  - env:
+  - id: ovn-exporter
+    env:
       - CGO_ENABLED=0
     goos:
       - linux
@@ -16,30 +19,55 @@ builds:
         -X github.com/prometheus/common/version.Version={{ .Version }}
         -X github.com/prometheus/common/version.Revision={{ .Commit }}
         -X github.com/prometheus/common/version.Branch={{ .Branch }}
-        -X github.com/prometheus/common/version.BuildUser=Liquescent-Development
+        -X github.com/prometheus/common/version.BuildUser=supergate-hub
         -X github.com/prometheus/common/version.BuildDate={{ .Date }}
-        -X github.com/Liquescent-Development/ovn_exporter/pkg/ovn_exporter.appVersion={{ .Version }}
-        -X github.com/Liquescent-Development/ovn_exporter/pkg/ovn_exporter.gitBranch={{ .Branch }}
-        -X github.com/Liquescent-Development/ovn_exporter/pkg/ovn_exporter.gitCommit={{ .Commit }}
-        -X github.com/Liquescent-Development/ovn_exporter/pkg/ovn_exporter.buildUser=Liquescent-Development
-        -X github.com/Liquescent-Development/ovn_exporter/pkg/ovn_exporter.buildDate={{ .Date }}
-    main: './cmd/ovn_exporter'
+        -X github.com/supergate-hub/ovn_exporter/pkg/ovn_exporter.appVersion={{ .Version }}
+        -X github.com/supergate-hub/ovn_exporter/pkg/ovn_exporter.gitBranch={{ .Branch }}
+        -X github.com/supergate-hub/ovn_exporter/pkg/ovn_exporter.gitCommit={{ .Commit }}
+        -X github.com/supergate-hub/ovn_exporter/pkg/ovn_exporter.buildUser=supergate-hub
+        -X github.com/supergate-hub/ovn_exporter/pkg/ovn_exporter.buildDate={{ .Date }}
+    main: ./cmd/ovn_exporter
     asmflags:
-      - 'all=-trimpath='
+      - all=-trimpath=
     gcflags:
-      - 'all=-trimpath='
+      - all=-trimpath=
     binary: ovn-exporter
+
 archives:
-  - name_template: "ovn-exporter_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
+  - name_template: >-
+      ovn-exporter_{{ .Version }}_{{ .Os }}_
+      {{- .Arch }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+      {{- if .Mips }}_{{ .Mips }}{{ end }}
     files:
       - install.sh
       - assets/**/*
       - LICENSE
       - README.md
+
+nfpms:
+  - id: ovn-exporter
+    package_name: ovn-exporter
+    file_name_template: "{{ .ConventionalFileName }}"
+    vendor: supergate-hub
+    homepage: https://github.com/supergate-hub/ovn_exporter
+    maintainer: supergate-hub
+    description: Prometheus exporter for Open Virtual Network (OVN) infrastructure
+    license: Apache 2.0
+    formats:
+      - deb
+      - rpm
+    bindir: /usr/sbin
+    contents:
+      - src: packaging/ovn-exporter.service
+        dst: /usr/lib/systemd/system/ovn-exporter.service
+
 checksum:
-  name_template: 'checksums.txt'
+  name_template: checksums.txt
+
 snapshot:
-  name_template: "{{ .Version }}"
+  version_template: "{{ .Version }}"
+
 changelog:
   sort: asc
   filters:
