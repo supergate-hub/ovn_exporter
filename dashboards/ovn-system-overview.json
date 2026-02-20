@@ -25,7 +25,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": null,
+  "id": 29,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -34,7 +34,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Version information about the OVN installation including system ID, OVN version, and database schema version.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -72,12 +72,14 @@
         "footer": {
           "countRows": false,
           "fields": "",
-          "reducer": ["sum"],
+          "reducer": [
+            "sum"
+          ],
           "show": false
         },
         "showHeader": true
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "10.4.0",
       "targets": [
         {
           "datasource": {
@@ -85,35 +87,35 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "max by (hostname, ovn_version, db_version, system_type, system_version) (ovn_info)",
+          "expr": "max by (hostname, ovs_version, db_version, system_type, system_version) (ovn_ovs_info)",
           "format": "table",
           "instant": true,
           "refId": "A"
         }
       ],
-      "title": "OVN Info",
+      "title": "OVS Info",
       "transformations": [
         {
           "id": "organize",
           "options": {
             "excludeByName": {
               "Time": true,
+              "Value": true,
               "__name__": true,
-              "job": true,
               "instance": true,
-              "Value": true
+              "job": true
             },
             "indexByName": {
-              "hostname": 0,
-              "ovn_version": 1,
               "db_version": 2,
+              "hostname": 0,
+              "ovs_version": 1,
               "system_type": 3,
               "system_version": 4
             },
             "renameByName": {
-              "hostname": "Hostname",
-              "ovn_version": "OVN Version",
               "db_version": "DB Version",
+              "hostname": "Hostname",
+              "ovs_version": "OVS Version",
               "system_type": "System Type",
               "system_version": "OS Version"
             }
@@ -218,12 +220,14 @@
         "footer": {
           "countRows": false,
           "fields": "",
-          "reducer": ["sum"],
+          "reducer": [
+            "sum"
+          ],
           "show": false
         },
         "showHeader": true
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "10.4.0",
       "targets": [
         {
           "datasource": {
@@ -245,18 +249,18 @@
             "excludeByName": {
               "Time": true,
               "__name__": true,
-              "job": true,
-              "instance": true
+              "instance": true,
+              "job": true
             },
             "indexByName": {
-              "name": 0,
+              "Value": 2,
               "ip": 1,
-              "Value": 2
+              "name": 0
             },
             "renameByName": {
               "Value": "Last Config Sync (ms)",
-              "name": "Chassis Name",
-              "ip": "IP Address"
+              "ip": "IP Address",
+              "name": "Chassis Name"
             }
           }
         }
@@ -321,14 +325,18 @@
         "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "10.4.0",
       "targets": [
         {
           "datasource": {
@@ -391,14 +399,18 @@
         "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "10.4.0",
       "targets": [
         {
           "datasource": {
@@ -406,7 +418,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(max by (system_id) (rate(ovn_failed_requests_total[5m]))) * 60",
+          "expr": "sum(max by (host_name) (rate(ovn_failed_requests_total[5m]))) * 60",
           "legendFormat": "Failed Requests/min",
           "range": true,
           "refId": "A"
@@ -428,9 +440,9 @@
           },
           "custom": {
             "hideFrom": {
+              "legend": false,
               "tooltip": false,
-              "viz": false,
-              "legend": false
+              "viz": false
             }
           },
           "mappings": [],
@@ -446,16 +458,22 @@
       },
       "id": 3,
       "options": {
-        "displayLabels": ["percent"],
+        "displayLabels": [
+          "percent"
+        ],
         "legend": {
           "displayMode": "table",
           "placement": "right",
           "showLegend": true,
-          "values": ["value"]
+          "values": [
+            "value"
+          ]
         },
         "pieType": "donut",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -518,14 +536,18 @@
         "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "10.4.0",
       "targets": [
         {
           "datasource": {
@@ -533,7 +555,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "count(count by (name) (max by (name, system_id) (ovn_logical_switch_info)))",
+          "expr": "count(count by (name) (max by (name) (ovn_logical_switch_info)))",
           "legendFormat": "Logical Switches",
           "range": true,
           "refId": "A"
@@ -585,17 +607,22 @@
       },
       "id": 5,
       "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
         "showThresholdLabels": false,
         "showThresholdMarkers": true,
+        "sizing": "auto",
         "text": {}
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "10.4.0",
       "targets": [
         {
           "datasource": {
@@ -603,7 +630,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "avg(max by (system_id) (ovn_up)) * 100",
+          "expr": "avg(max by (instance) (ovn_up)) * 100",
           "legendFormat": "Availability",
           "range": true,
           "refId": "A"
@@ -650,14 +677,18 @@
         "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "10.4.0",
       "targets": [
         {
           "datasource": {
@@ -665,7 +696,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "count(count by (name) (max by (name, system_id) (ovn_logical_switch_port_info)))",
+          "expr": "count(count by (name) (max by (name) (ovn_logical_switch_port_info)))",
           "legendFormat": "Logical Ports",
           "range": true,
           "refId": "A"
@@ -712,14 +743,18 @@
         "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "10.4.0",
       "targets": [
         {
           "datasource": {
@@ -727,7 +762,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "count(count by (name) (max by (name, system_id) (ovn_logical_router_info)))",
+          "expr": "count(count by (name) (max by (name) (ovn_logical_router_info)))",
           "legendFormat": "Logical Routers",
           "range": true,
           "refId": "A"
@@ -735,6 +770,19 @@
       ],
       "title": "Total Logical Routers",
       "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "id": 151,
+      "panels": [],
+      "title": "cluster",
+      "type": "row"
     },
     {
       "datasource": {
@@ -785,7 +833,7 @@
         "h": 4,
         "w": 12,
         "x": 0,
-        "y": 21
+        "y": 22
       },
       "id": 14,
       "options": {
@@ -794,14 +842,18 @@
         "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "10.4.0",
       "targets": [
         {
           "datasource": {
@@ -809,8 +861,8 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "max by (system_id) (ovn_cluster_leader_self{component=\"ovsdb-server-northbound\"})",
-          "legendFormat": "NB: {{system_id}}",
+          "expr": "max by (host_name) (ovn_cluster_leader_self{component=\"ovsdb-server-northbound\"})",
+          "legendFormat": "NB: {{host_name}}",
           "range": true,
           "refId": "A"
         },
@@ -820,8 +872,8 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "max by (system_id) (ovn_cluster_leader_self{component=\"ovsdb-server-southbound\"})",
-          "legendFormat": "SB: {{system_id}}",
+          "expr": "max by (host_name) (ovn_cluster_leader_self{component=\"ovsdb-server-southbound\"})",
+          "legendFormat": "SB: {{host_name}}",
           "range": true,
           "refId": "B"
         }
@@ -866,7 +918,7 @@
         "h": 4,
         "w": 12,
         "x": 12,
-        "y": 21
+        "y": 22
       },
       "id": 150,
       "options": {
@@ -875,14 +927,18 @@
         "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "10.4.0",
       "targets": [
         {
           "datasource": {
@@ -911,6 +967,7 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -920,9 +977,9 @@
             "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
+              "legend": false,
               "tooltip": false,
-              "viz": false,
-              "legend": false
+              "viz": false
             },
             "insertNulls": false,
             "lineInterpolation": "linear",
@@ -959,12 +1016,15 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 25
+        "y": 26
       },
       "id": 8,
       "options": {
         "legend": {
-          "calcs": ["mean", "lastNotNull"],
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -981,7 +1041,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "max by (component, cluster_id) (ovn_cluster_log_high_index)",
+          "expr": "max by (component, cluster_id) (ovn_cluster_log_high_index_total)",
           "legendFormat": "{{component}} ({{cluster_id}})",
           "range": true,
           "refId": "A"
@@ -1002,6 +1062,7 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -1011,9 +1072,9 @@
             "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
+              "legend": false,
               "tooltip": false,
-              "viz": false,
-              "legend": false
+              "viz": false
             },
             "insertNulls": false,
             "lineInterpolation": "linear",
@@ -1050,12 +1111,15 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 25
+        "y": 26
       },
       "id": 9,
       "options": {
         "legend": {
-          "calcs": ["mean", "lastNotNull"],
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -1093,6 +1157,7 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -1102,9 +1167,9 @@
             "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
+              "legend": false,
               "tooltip": false,
-              "viz": false,
-              "legend": false
+              "viz": false
             },
             "insertNulls": false,
             "lineInterpolation": "linear",
@@ -1141,12 +1206,15 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 33
+        "y": 34
       },
       "id": 10,
       "options": {
         "legend": {
-          "calcs": ["mean", "lastNotNull"],
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -1184,6 +1252,7 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -1193,9 +1262,9 @@
             "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
+              "legend": false,
               "tooltip": false,
-              "viz": false,
-              "legend": false
+              "viz": false
             },
             "insertNulls": false,
             "lineInterpolation": "linear",
@@ -1240,12 +1309,16 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 33
+        "y": 34
       },
       "id": 12,
       "options": {
         "legend": {
-          "calcs": ["mean", "max", "lastNotNull"],
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -1262,7 +1335,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "(time() * 1000 - max by (name) (ovn_chassis_nb_cfg_timestamp_milliseconds)) / 1000",
+          "expr": "(time() * 1000 - max by (name) (ovn_chassis_nb_cfg_timestamp_milliseconds > 0)) / 1000",
           "legendFormat": "{{name}}",
           "range": true,
           "refId": "A"
@@ -1283,6 +1356,7 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -1292,9 +1366,9 @@
             "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
+              "legend": false,
               "tooltip": false,
-              "viz": false,
-              "legend": false
+              "viz": false
             },
             "insertNulls": false,
             "lineInterpolation": "stepAfter",
@@ -1331,12 +1405,14 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 41
+        "y": 42
       },
       "id": 13,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -1374,6 +1450,7 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "Raft Term",
@@ -1383,9 +1460,9 @@
             "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
+              "legend": false,
               "tooltip": false,
-              "viz": false,
-              "legend": false
+              "viz": false
             },
             "insertNulls": false,
             "lineInterpolation": "stepAfter",
@@ -1422,12 +1499,14 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 41
+        "y": 42
       },
       "id": 17,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
@@ -1444,7 +1523,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "max by (component) (ovn_cluster_term)",
+          "expr": "max by (component) (ovn_cluster_term_total)",
           "legendFormat": "{{component}}",
           "range": true,
           "refId": "A"
@@ -1465,6 +1544,7 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "Elections",
@@ -1474,9 +1554,9 @@
             "fillOpacity": 80,
             "gradientMode": "none",
             "hideFrom": {
+              "legend": false,
               "tooltip": false,
-              "viz": false,
-              "legend": false
+              "viz": false
             },
             "insertNulls": false,
             "lineInterpolation": "linear",
@@ -1521,12 +1601,14 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 49
+        "y": 50
       },
       "id": 18,
       "options": {
         "legend": {
-          "calcs": ["sum"],
+          "calcs": [
+            "sum"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -1543,7 +1625,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "max by (component) (changes(ovn_cluster_term[5m]))",
+          "expr": "max by (component) (changes(ovn_cluster_term_total[5m]))",
           "legendFormat": "{{component}}",
           "range": true,
           "refId": "A"
@@ -1564,6 +1646,7 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -1573,9 +1656,9 @@
             "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
+              "legend": false,
               "tooltip": false,
-              "viz": false,
-              "legend": false
+              "viz": false
             },
             "insertNulls": false,
             "lineInterpolation": "linear",
@@ -1612,12 +1695,14 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 49
+        "y": 50
       },
       "id": 19,
       "options": {
         "legend": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
@@ -1645,16 +1730,15 @@
     }
   ],
   "refresh": "30s",
-  "schemaVersion": 38,
-  "style": "dark",
-  "tags": ["ovn", "networking", "infrastructure"],
+  "schemaVersion": 39,
+  "tags": [],
   "templating": {
     "list": [
       {
         "current": {
           "selected": false,
-          "text": "Prometheus",
-          "value": "prometheus"
+          "text": "",
+          "value": ""
         },
         "hide": 0,
         "includeAll": false,
@@ -1678,7 +1762,7 @@
   "timepicker": {},
   "timezone": "",
   "title": "OVN System Overview",
-  "uid": "ovn-system-overview",
-  "version": 1,
+  "uid": "efdo2n5bmcpvkf",
+  "version": 11,
   "weekStart": ""
 }

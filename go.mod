@@ -1,4 +1,4 @@
-module github.com/Liquescent-Development/ovn_exporter
+module github.com/supergate-hub/ovn_exporter
 
 go 1.24.0
 
@@ -25,4 +25,4 @@ require (
 	google.golang.org/protobuf v1.36.9 // indirect
 )
 
-replace github.com/greenpau/ovsdb => github.com/lucadelmonte/ovsdb v1.0.4-0.20251226203325-87e68f9104f3
+replace github.com/greenpau/ovsdb => github.com/supergate-hub/ovsdb v1.0.5
