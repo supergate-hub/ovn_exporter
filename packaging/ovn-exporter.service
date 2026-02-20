@@ -1,0 +1,16 @@
+[Unit]
+Description=Prometheus OVN Exporter
+After=network.target
+
+[Service]
+User=ovn_exporter
+Group=ovn_exporter
+EnvironmentFile=-/etc/sysconfig/ovn-exporter
+EnvironmentFile=-/etc/default/ovn-exporter
+ExecStart=/usr/sbin/ovn-exporter $OPTIONS
+Restart=on-failure
+AmbientCapabilities=CAP_SYS_ADMIN CAP_SYS_NICE CAP_DAC_OVERRIDE
+CapabilityBoundingSet=CAP_SYS_ADMIN CAP_SYS_NICE CAP_DAC_OVERRIDE
+
+[Install]
+WantedBy=multi-user.target
