@@ -4,18 +4,18 @@
 [![Go Version](https://img.shields.io/badge/go-1.24-blue.svg)](https://go.dev/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
-Export Open Virtual Network (OVN) data to Prometheus.
+Export Open Virtual Network (OVN) and Open vSwitch (OVS) data to Prometheus.
 
-> **Note**: This is a modernized fork of the original [greenpau/ovn_exporter](https://github.com/greenpau/ovn_exporter) which is now archived. This version includes security improvements, updated dependencies, and compatibility with Go 1.24+.
+> **Note**: This is a fork of the original [greenpau/ovn_exporter](https://github.com/greenpau/ovn_exporter). The primary motivation is to support selective metric collection via `--ovn.enabled` / `--ovs.enabled` flags, allowing independent collection of OVN (NBDB, SBDB, `ovn-northd`) and OVS (`ovs-vswitchd`, OVSDB) components.
 
 ## Features
 
 This exporter collects metrics from the following OVN components:
 * OVN `northd` service
+* OVN `Northbound` database (NBDB)
+* OVN `Southbound` database (SBDB)
 * OVS `vswitchd` service
-* `OVN Northbound` database
-* `OVN Southbound` database
-* `Open_vSwitch` database
+* OVS `Open_vSwitch` database (OVSDB)
 
 ## What's New in v3.0.0
 
@@ -265,6 +265,7 @@ A comprehensive infrastructure monitoring dashboard for system operators featuri
 **Target Audience**: System operators, infrastructure teams, NOC engineers
 
 ### 📊 OVN SLA/SLO Performance
+
 **File**: [`ovn-sla-performance.json`](dashboards/ovn-sla-performance.json)
 
 A customer experience focused dashboard for tracking service level objectives:

@@ -11,8 +11,6 @@ This exporter follows [Prometheus metric naming best practices](https://promethe
 - Units are included in metric names where appropriate (`_bytes`, `_seconds`)
 - Info metrics end with `_info`
 
-> **Note**: Some legacy metric names are retained for backward compatibility but may be deprecated in future versions.
-
 ## Core Metrics
 
 ### System Status
@@ -20,36 +18,36 @@ This exporter follows [Prometheus metric naming best practices](https://promethe
 | Metric | Type | Description | Labels |
 |--------|------|-------------|--------|
 | `ovn_up` | Gauge | Whether OVN stack is up (1) or down (0) | - |
-| `ovn_info` | Gauge | Basic information about OVN stack (always 1) | `system_id`, `rundir`, `hostname`, `system_type`, `system_version`, `ovs_version`, `db_version` |
-| `ovn_exporter_build_info` | Gauge | Build information about the exporter (always 1) | `version`, `revision`, `branch`, `goversion` |
+| `ovn_ovs_info` | Gauge | Basic information about OVS stack (always 1) | `system_id`, `rundir`, `hostname`, `system_type`, `system_version`, `ovs_version`, `db_version` |
+
 
 ### Request and Polling Metrics
 
 | Metric | Type | Description | Labels |
 |--------|------|-------------|--------|
-| `ovn_requests_total` | Counter | Total number of requests to OVN stack | `system_id` |
-| `ovn_successful_requests_total` | Counter | Total number of successful requests to OVN stack | `system_id` |
-| `ovn_failed_requests_total` | Counter | Total number of failed requests to OVN stack | `system_id` |
-| `ovn_next_poll_timestamp_seconds` | Counter | Timestamp of the next potential poll of OVN stack (Unix timestamp) | `system_id` |
+| `ovn_requests_total` | Counter | Total number of requests to OVN stack | - |
+| `ovn_successful_requests_total` | Counter | Total number of successful requests to OVN stack | - |
+| `ovn_failed_requests_total` | Counter | Total number of failed requests to OVN stack | - |
+| `ovn_next_poll_timestamp_seconds` | Counter | Timestamp of the next potential poll of OVN stack (Unix timestamp) | - |
 
 ### Process Metrics
 
 | Metric | Type | Description | Labels |
 |--------|------|-------------|--------|
-| `ovn_pid` | Gauge | Process ID of a running OVN component (0 if not running) | `system_id`, `component`, `user`, `group` |
+| `ovn_pid` | Gauge | Process ID of a running OVN component (0 if not running) | `component`, `user`, `group` |
 
 ### File Size Metrics
 
 | Metric | Type | Description | Labels |
 |--------|------|-------------|--------|
-| `ovn_log_file_size_bytes` | Gauge | Size of a log file associated with an OVN component in bytes | `system_id`, `component`, `filename` |
-| `ovn_db_file_size_bytes` | Gauge | Size of a database file associated with an OVN component in bytes | `system_id`, `component`, `filename` |
+| `ovn_log_file_size_bytes` | Gauge | Size of a log file associated with an OVN component in bytes | `component`, `filename` |
+| `ovn_db_file_size_bytes` | Gauge | Size of a database file associated with an OVN component in bytes | `component`, `filename` |
 
 ### Log Event Metrics
 
 | Metric | Type | Description | Labels |
 |--------|------|-------------|--------|
-| `ovn_log_events_total` | Counter | Total number of recorded log messages by severity and source | `system_id`, `component`, `severity`, `source` |
+| `ovn_log_events_total` | Counter | Total number of recorded log messages by severity and source | `component`, `severity`, `source` |
 
 ## Cluster Metrics
 
@@ -57,46 +55,46 @@ This exporter follows [Prometheus metric naming best practices](https://promethe
 
 | Metric | Type | Description | Labels |
 |--------|------|-------------|--------|
-| `ovn_cluster_enabled` | Gauge | Whether OVN clustering is enabled (1) or not (0) | `system_id`, `component` |
-| `ovn_cluster_status` | Gauge | Status of server in cluster (1=member, 0=other) | `system_id`, `component`, `server_id`, `cluster_id` |
-| `ovn_cluster_role` | Gauge | Role in cluster (3=leader, 2=candidate, 1=follower, 0=other) | `system_id`, `component`, `server_id`, `cluster_id` |
-| `ovn_cluster_group` | Gauge | Cluster group participation (always 1) | `system_id`, `cluster_group` |
+| `ovn_cluster_enabled` | Gauge | Whether OVN clustering is enabled (1) or not (0) | `component` |
+| `ovn_cluster_status` | Gauge | Status of server in cluster (1=member, 0=other) | `component`, `server_id`, `cluster_id` |
+| `ovn_cluster_role` | Gauge | Role in cluster (3=leader, 2=candidate, 1=follower, 0=other) | `component`, `server_id`, `server_uuid`, `cluster_id`, `cluster_uuid` |
+| `ovn_cluster_group` | Gauge | Cluster group participation (always 1) | `cluster_group` |
 
 ### Cluster Peer Connections
 
 | Metric | Type | Description | Labels |
 |--------|------|-------------|--------|
-| `ovn_cluster_inbound_peer_connected` | Gauge | Cluster peer connected to this server (always 1 when connected) | `system_id`, `component`, `server_id`, `cluster_id`, `peer_id`, `peer_address` |
-| `ovn_cluster_outbound_peer_connected` | Gauge | This server connected to cluster peer (always 1 when connected) | `system_id`, `component`, `server_id`, `cluster_id`, `peer_id`, `peer_address` |
-| `ovn_cluster_inbound_peer_conn_total` | Gauge | Total number of inbound connections from cluster peers | `system_id`, `component`, `server_id`, `cluster_id` |
-| `ovn_cluster_outbound_peer_conn_total` | Gauge | Total number of outbound connections to cluster peers | `system_id`, `component`, `server_id`, `cluster_id` |
-| `ovn_cluster_peer_count` | Gauge | Total number of peers in this server's cluster | `system_id`, `component`, `server_id`, `cluster_id` |
+| `ovn_cluster_inbound_peer_connected` | Gauge | Cluster peer connected to this server (always 1 when connected) | `component`, `server_id`, `cluster_id`, `peer_id`, `peer_address` |
+| `ovn_cluster_outbound_peer_connected` | Gauge | This server connected to cluster peer (always 1 when connected) | `component`, `server_id`, `cluster_id`, `peer_id`, `peer_address` |
+| `ovn_cluster_inbound_peer_conn_total` | Gauge | Total number of inbound connections from cluster peers | `component`, `server_id`, `cluster_id` |
+| `ovn_cluster_outbound_peer_conn_total` | Gauge | Total number of outbound connections to cluster peers | `component`, `server_id`, `cluster_id` |
+| `ovn_cluster_peer_count` | Gauge | Total number of peers in this server's cluster | `component`, `server_id`, `cluster_id` |
 
 ### Raft Consensus Metrics
 
 | Metric | Type | Description | Labels |
 |--------|------|-------------|--------|
-| `ovn_cluster_term` | Counter | Current raft term known by this server | `system_id`, `component`, `server_id`, `cluster_id` |
-| `ovn_cluster_leader_self` | Gauge | Whether this server considers itself a leader (1) or not (0) | `system_id`, `component`, `server_id`, `cluster_id` |
-| `ovn_cluster_vote_self` | Gauge | Whether this server voted itself as leader (1) or not (0) | `system_id`, `component`, `server_id`, `cluster_id` |
+| `ovn_cluster_term` | Counter | Current raft term known by this server | `component`, `server_id`, `cluster_id` |
+| `ovn_cluster_leader_self` | Gauge | Whether this server considers itself a leader (1) or not (0) | `component`, `server_id`, `cluster_id` |
+| `ovn_cluster_vote_self` | Gauge | Whether this server voted itself as leader (1) or not (0) | `component`, `server_id`, `cluster_id` |
 
 ### Raft Log Metrics
 
 | Metric | Type | Description | Labels |
 |--------|------|-------------|--------|
-| `ovn_cluster_log_low_index` | Counter | Raft log low index for this server | `system_id`, `component`, `server_id`, `cluster_id` |
-| `ovn_cluster_log_high_index` | Counter | Raft log high index for this server | `system_id`, `component`, `server_id`, `cluster_id` |
-| `ovn_cluster_next_index` | Counter | Raft next index for this server | `system_id`, `component`, `server_id`, `cluster_id` |
-| `ovn_cluster_match_index` | Counter | Raft match index for this server | `system_id`, `component`, `server_id`, `cluster_id` |
-| `ovn_cluster_uncommitted_entry_count` | Gauge | Number of raft entries not yet committed | `system_id`, `component`, `server_id`, `cluster_id` |
-| `ovn_cluster_pending_entry_count` | Gauge | Number of raft entries not yet applied | `system_id`, `component`, `server_id`, `cluster_id` |
+| `ovn_cluster_log_low_index` | Counter | Raft log low index for this server | `component`, `server_id`, `cluster_id` |
+| `ovn_cluster_log_high_index` | Counter | Raft log high index for this server | `component`, `server_id`, `cluster_id` |
+| `ovn_cluster_next_index` | Counter | Raft next index for this server | `component`, `server_id`, `cluster_id` |
+| `ovn_cluster_match_index` | Counter | Raft match index for this server | `component`, `server_id`, `cluster_id` |
+| `ovn_cluster_uncommitted_entry_count` | Gauge | Number of raft entries not yet committed | `component`, `server_id`, `cluster_id` |
+| `ovn_cluster_pending_entry_count` | Gauge | Number of raft entries not yet applied | `component`, `server_id`, `cluster_id` |
 
 ### Raft Peer Metrics
 
 | Metric | Type | Description | Labels |
 |--------|------|-------------|--------|
-| `ovn_cluster_peer_next_index` | Counter | Raft next index for cluster peer | `system_id`, `component`, `server_id`, `cluster_id`, `peer_id` |
-| `ovn_cluster_peer_match_index` | Counter | Raft match index for cluster peer | `system_id`, `component`, `server_id`, `cluster_id`, `peer_id` |
+| `ovn_cluster_peer_next_index` | Counter | Raft next index for cluster peer | `component`, `server_id`, `cluster_id`, `peer_id` |
+| `ovn_cluster_peer_match_index` | Counter | Raft match index for cluster peer | `component`, `server_id`, `cluster_id`, `peer_id` |
 
 ## Network Metrics
 
@@ -104,13 +102,14 @@ This exporter follows [Prometheus metric naming best practices](https://promethe
 
 | Metric | Type | Description | Labels |
 |--------|------|-------------|--------|
-| `ovn_chassis_info` | Gauge | Chassis status (1=up, 0=down) with additional info | `system_id`, `uuid`, `name`, `ip` |
+| `ovn_chassis_nb_cfg` | Gauge | The nb_cfg (configuration sequence number) from OVN Chassis_Private table. 0 if chassis has no entry. | `uuid`, `name`, `ip` |
+| `ovn_chassis_nb_cfg_timestamp_milliseconds` | Gauge | The nb_cfg_timestamp from OVN Chassis_Private table in milliseconds. 0 if chassis has no entry. | `uuid`, `name`, `ip` |
 
 ### Network Ports
 
 | Metric | Type | Description | Labels |
 |--------|------|-------------|--------|
-| `ovn_network_port` | Gauge | TCP port used for database connection (0 if not in use) | `system_id`, `component`, `usage` |
+| `ovn_network_port` | Gauge | TCP port used for database connection (0 if not in use) | `component`, `usage` |
 
 ## Logical Network Metrics
 
@@ -118,30 +117,30 @@ This exporter follows [Prometheus metric naming best practices](https://promethe
 
 | Metric | Type | Description | Labels |
 |--------|------|-------------|--------|
-| `ovn_logical_switch_info` | Gauge | Information about logical switch (always 1) | `system_id`, `uuid`, `name` |
-| `ovn_logical_switch_external_id` | Gauge | External IDs for logical switches (always 1) | `system_id`, `uuid`, `key`, `value` |
-| `ovn_logical_switch_tunnel_key` | Gauge | Tunnel key value for logical switch | `system_id`, `uuid` |
-| `ovn_logical_switch_ports` | Gauge | Number of ports connected to logical switch | `system_id`, `uuid` |
+| `ovn_logical_switch_info` | Gauge | Information about logical switch (always 1) | `uuid`, `name` |
+| `ovn_logical_switch_external_id` | Gauge | External IDs for logical switches (always 1) | `uuid`, `key`, `value` |
+| `ovn_logical_switch_tunnel_key` | Gauge | Tunnel key value for logical switch | `uuid` |
+| `ovn_logical_switch_ports` | Gauge | Number of ports connected to logical switch | `uuid` |
 
 ### Logical Switch Ports
 
 | Metric | Type | Description | Labels |
 |--------|------|-------------|--------|
-| `ovn_logical_switch_port_info` | Gauge | Information about logical switch port (always 1) | `system_id`, `uuid`, `name`, `chassis`, `datapath`, `port_binding`, `mac_address`, `ip_address` |
-| `ovn_logical_switch_port_binding` | Gauge | Association between logical switch and port (always 1) | `system_id`, `uuid`, `port` |
-| `ovn_logical_switch_port_tunnel_key` | Gauge | Tunnel key value for logical switch port | `system_id`, `uuid` |
+| `ovn_logical_switch_port_info` | Gauge | Information about logical switch port (always 1) | `uuid`, `name`, `chassis`, `logical_switch`, `datapath`, `port_binding`, `mac_address`, `ip_address` |
+| `ovn_logical_switch_port_binding` | Gauge | Association between logical switch and port (always 1) | `uuid`, `port` |
+| `ovn_logical_switch_port_tunnel_key` | Gauge | Tunnel key value for logical switch port | `uuid` |
 
 ### Logical Routers
 
 | Metric | Type | Description | Labels |
 |--------|------|-------------|--------|
-| `ovn_logical_router_info` | Gauge | Information about logical router (always 1) | `system_id`, `uuid`, `name` |
-| `ovn_logical_router_external_id` | Gauge | External IDs for logical routers (always 1) | `system_id`, `uuid`, `key`, `value` |
-| `ovn_logical_router_ports` | Gauge | Number of ports connected to logical router | `system_id`, `uuid` |
-| `ovn_logical_router_static_routes` | Gauge | Number of static routes configured on logical router | `system_id`, `uuid` |
-| `ovn_logical_router_nat_rules` | Gauge | Number of NAT rules configured on logical router | `system_id`, `uuid` |
-| `ovn_logical_router_load_balancers` | Gauge | Number of load balancers associated with logical router | `system_id`, `uuid` |
-| `ovn_logical_router_policies` | Gauge | Number of routing policies configured on logical router | `system_id`, `uuid` |
+| `ovn_logical_router_info` | Gauge | Information about logical router (always 1) | `uuid`, `name` |
+| `ovn_logical_router_external_id` | Gauge | External IDs for logical routers (always 1) | `uuid`, `key`, `value` |
+| `ovn_logical_router_ports` | Gauge | Number of ports connected to logical router | `uuid` |
+| `ovn_logical_router_static_routes` | Gauge | Number of static routes configured on logical router | `uuid` |
+| `ovn_logical_router_nat_rules` | Gauge | Number of NAT rules configured on logical router | `uuid` |
+| `ovn_logical_router_load_balancers` | Gauge | Number of load balancers associated with logical router | `uuid` |
+| `ovn_logical_router_policies` | Gauge | Number of routing policies configured on logical router | `uuid` |
 
 ## Performance Metrics
 
@@ -149,20 +148,20 @@ This exporter follows [Prometheus metric naming best practices](https://promethe
 
 | Metric | Type | Description | Labels |
 |--------|------|-------------|--------|
-| `ovn_coverage_avg` | Gauge | Average rate of events during OVSDB daemon runtime | `system_id`, `component`, `event`, `interval` |
-| `ovn_coverage_total` | Counter | Total count of events during OVSDB daemon runtime | `system_id`, `component`, `event` |
+| `ovn_coverage_avg` | Gauge | Average rate of events during OVSDB daemon runtime | `component`, `event`, `interval` |
+| `ovn_coverage_total` | Counter | Total count of events during OVSDB daemon runtime | `component`, `event` |
 
 ### Memory Usage
 
 | Metric | Type | Description | Labels |
 |--------|------|-------------|--------|
-| `ovn_memory_usage_bytes` | Gauge | Memory usage in bytes | `system_id`, `component`, `facility` |
+| `ovn_memory_usage_bytes` | Gauge | Memory usage in bytes | `component`, `facility` |
 
 ## Label Descriptions
 
 ### Common Labels
 
-- `system_id`: Unique identifier for the OVN system
+- `system_id`: Unique identifier for the OVN system (only on `ovn_ovs_info` metric)
 - `component`: OVN component (e.g., `ovsdb-server-northbound`, `ovsdb-server-southbound`, `ovn-northd`, `ovs-vswitchd`)
 - `uuid`: Universally unique identifier for the resource
 
@@ -227,6 +226,13 @@ ovn_memory_usage_bytes
 # Failed request rate
 rate(ovn_failed_requests_total[5m])
 ```
+
+## Metric Changes in v3.0.0
+
+| v2.x | v3.0.0 | Notes |
+|------|--------|-------|
+| `ovn_info` | `ovn_ovs_info` | OVS-specific; `system_id` is now a label on this metric only |
+| `ovn_*{system_id="..."}` | `ovn_*` | `system_id` label removed from all other metrics |
 
 ## Metric Naming Changes in v2.0.0
 

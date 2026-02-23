@@ -135,12 +135,12 @@ var (
 	)
 	clusterPeerInConnTotal = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "", "cluster_inbound_peer_conn_total"),
-		"The total number of outbound connections to cluster peers.",
+		"The total number of inbound connections from cluster peers.",
 		[]string{"component", "server_id", "cluster_id"}, nil,
 	)
 	clusterPeerOutConnTotal = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "", "cluster_outbound_peer_conn_total"),
-		"The total number of inbound connections from cluster peers.",
+		"The total number of outbound connections to cluster peers.",
 		[]string{"component", "server_id", "cluster_id"}, nil,
 	)
 	clusterPeerCount = prometheus.NewDesc(
