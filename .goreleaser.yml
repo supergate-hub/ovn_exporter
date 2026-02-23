@@ -34,7 +34,8 @@ builds:
     binary: ovn-exporter
 
 archives:
-  - name_template: >-
+  - formats: [tar.gz]
+    name_template: >-
       ovn-exporter_{{ .Version }}_{{ .Os }}_
       {{- .Arch }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
@@ -49,9 +50,9 @@ nfpms:
   - id: ovn-exporter
     package_name: ovn-exporter
     file_name_template: "{{ .ConventionalFileName }}"
-    vendor: supergate-hub
+    vendor: Supergate
     homepage: https://github.com/supergate-hub/ovn_exporter
-    maintainer: supergate-hub
+    maintainer: Supergate <contact@supergate.cc>
     description: Prometheus exporter for Open Virtual Network (OVN) infrastructure
     license: Apache 2.0
     formats:
@@ -61,6 +62,9 @@ nfpms:
     contents:
       - src: packaging/ovn-exporter.service
         dst: /usr/lib/systemd/system/ovn-exporter.service
+    scripts:
+      postinstall: packaging/postinstall.sh
+      preremove: packaging/preremove.sh
 
 checksum:
   name_template: checksums.txt
