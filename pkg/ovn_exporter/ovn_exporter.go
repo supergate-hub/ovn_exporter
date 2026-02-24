@@ -613,7 +613,7 @@ func (e *Exporter) GatherMetrics() {
 	isClusterEnabled := false
 
 	if e.ovsEnabled {
-		e.gatherOvsMetrics(&upValue, &isClusterEnabled)
+		e.gatherOvsMetrics(&upValue)
 	}
 	if e.ovnEnabled {
 		e.gatherOvnMetrics(&upValue, &isClusterEnabled)
@@ -628,7 +628,7 @@ func (e *Exporter) GatherMetrics() {
 }
 
 // gatherOvsMetrics collects OVS-specific metrics using the OvsClient.
-func (e *Exporter) gatherOvsMetrics(upValue *int, isClusterEnabled *bool) {
+func (e *Exporter) gatherOvsMetrics(upValue *int) {
 	// Get OVS system info
 	err := e.OvsClient.GetSystemInfo()
 	if err != nil {
